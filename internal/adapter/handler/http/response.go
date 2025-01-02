@@ -30,6 +30,7 @@ func newResponse(success bool, message string, data any) response {
 func validationError(w http.ResponseWriter, err error) {
 	errMsgs := parseError(err)
 	errRsp := newErrorResponse(errMsgs)
+	w.WriteHeader(http.StatusBadRequest)
 	json.NewEncoder(w).Encode(errRsp)
 }
 
@@ -50,15 +51,24 @@ func parseError(err error) []string {
 
 // errorResponse represents an error response body format
 type errorResponse struct {
-	Success  bool     `json:"success" example:"false"`
-	Messages []string `json:"messages" example:"Error message 1, Error message 2"`
+	Success  bool   `json:"success" example:"false"`
+	Messages string `json:"messages" example:"Error message 1 - Error message 2"`
 }
 
 // newErrorResponse is a helper function to create an error response body
 func newErrorResponse(errMsgs []string) errorResponse {
+	msgs := ""
+	for i, v := range errMsgs {
+		if i == len(errMsgs)-1 {
+			msgs += v
+			continue
+		}
+		msgs += v + " - "
+	}
+
 	return errorResponse{
 		Success:  false,
-		Messages: errMsgs,
+		Messages: msgs,
 	}
 }
 

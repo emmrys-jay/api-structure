@@ -30,10 +30,16 @@ type TokenConfiguration struct {
 	Secret   string
 }
 
+type AdminConfiguration struct {
+	Email    string
+	Password string
+}
+
 type Configuration struct {
 	App      AppConfiguration
 	Server   ServerConfiguration
 	Database DatabaseConfiguration
 	Redis    RedisConfiguration
 	Token    TokenConfiguration
+	Admin    AdminConfiguration
 }

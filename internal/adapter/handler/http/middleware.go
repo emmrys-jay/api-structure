@@ -29,7 +29,7 @@ const (
 	correlationIDCtxKey contextKey = "correlation_id"
 )
 
-func authMiddleware(next http.Handler, token port.TokenService) http.Handler {
+func authMiddleware(next http.Handler, token port.TokenService, logger *zap.Logger) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenString := getToken(r, authorizationHeaderKey)
 		if tokenString == "" {
@@ -44,8 +44,9 @@ func authMiddleware(next http.Handler, token port.TokenService) http.Handler {
 			return
 		}
 
-		claims, err := token.VerifyToken(tokenString)
+		claims, err := token.VerifyToken(fields[1])
 		if err != nil {
+			logger.Error("error verifying token", zap.Error(err))
 			handleError(w, domain.ErrInvalidAuthorizationHeader)
 			return
 		}
@@ -86,8 +87,7 @@ func requestLogger(next http.Handler) http.Handler {
 		r = r.WithContext(ctx)
 
 		l = l.With(zap.String(string(correlationIDCtxKey), correlationID))
-
-		// w.Header().Add("X-Correlation-ID", correlationID)
+		w.Header().Add("X-Correlation-ID", correlationID)
 
 		lrw := newLoggingResponseWriter(w)
 
@@ -102,13 +102,64 @@ func requestLogger(next http.Handler) http.Handler {
 				),
 				zap.String("method", r.Method),
 				zap.String("url", r.RequestURI),
-				zap.String("user_agent", r.UserAgent()),
+				// zap.String("user_agent", r.UserAgent()),
 				zap.Int("status_code", lrw.statusCode),
 				zap.Duration("elapsed_ms", time.Since(start)),
 			)
 		}(time.Now())
 
+		lrw.Header().Add("Content-Type", "application/json")
 		next.ServeHTTP(lrw, r)
+	})
+}
+
+func adminMiddleware(next http.Handler, token port.TokenService, logger *zap.Logger) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tokenString := getToken(r, authorizationHeaderKey)
+		if tokenString == "" {
+			handleError(w, domain.ErrEmptyAuthorizationHeader)
+			return
+		}
+
+		fields := strings.Fields(tokenString)
+		isValid := len(fields) == 2
+		if !isValid {
+			handleError(w, domain.ErrInvalidAuthorizationType)
+			return
+		}
+
+		claims, err := token.VerifyToken(fields[1])
+		if err != nil {
+			if err.Error() == domain.ErrExpiredToken.Error() {
+				handleError(w, domain.ErrExpiredToken)
+				return
+			}
+
+			logger.Error("error verifying token", zap.Error(err))
+			handleError(w, domain.ErrInvalidAuthorizationHeader)
+			return
+		}
+
+		// claims.Email is of the form <email,role>
+		identifier := strings.Split(claims.Email, ",")
+		if len(identifier) != 2 {
+			handleError(w, domain.ErrInvalidAuthorizationHeader)
+			return
+		}
+
+		email, role := identifier[0], identifier[len(identifier)-1]
+		if role != domain.RAdmin.String() {
+			handleError(w, domain.NewUnauthorizedCError("authorization failed"))
+		}
+
+		// Set details from token in context
+		ctx := context.WithValue(r.Context(), authContextKey, contextInfo{
+			ID:    claims.ID,
+			Email: email,
+		})
+
+		// call the next handler in the chain, passing the response writer and
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 

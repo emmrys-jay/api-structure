@@ -3,15 +3,18 @@ package postgres
 import (
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 
 	"savely/internal/adapter/config"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/pgx"
+
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 
+	_ "github.com/golang-migrate/migrate/v4/database/pgx"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -33,8 +36,7 @@ type DB struct {
 	url          string
 }
 
-// New creates a new PostgreSQL database instance
-func New(ctx context.Context, config *config.DatabaseConfiguration) (*DB, error) {
+func dsn(config *config.DatabaseConfiguration) string {
 	url := fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=disable",
 		config.Protocol,
 		config.User,
@@ -44,6 +46,12 @@ func New(ctx context.Context, config *config.DatabaseConfiguration) (*DB, error)
 		config.Name,
 	)
 
+	return url
+}
+
+// New creates a new PostgreSQL database instance
+func New(ctx context.Context, config *config.DatabaseConfiguration) (*DB, error) {
+	url := dsn(config)
 	db, err := pgxpool.New(ctx, url)
 	if err != nil {
 		return nil, err
@@ -67,8 +75,9 @@ func New(ctx context.Context, config *config.DatabaseConfiguration) (*DB, error)
 func (db *DB) Migrate() error {
 	driver, err := iofs.New(migrationsFS, "migrations")
 	if err != nil {
-		return err
+		return fmt.Errorf("Error connecting to db: %w", err)
 	}
+	defer driver.Close()
 
 	migrations, err := migrate.NewWithSourceInstance("iofs", driver, db.url)
 	if err != nil {
@@ -77,7 +86,7 @@ func (db *DB) Migrate() error {
 
 	err = migrations.Up()
 	if err != nil && err != migrate.ErrNoChange {
-		return err
+		return fmt.Errorf("Error connecting to db: %w", err)
 	}
 
 	return nil
@@ -85,8 +94,11 @@ func (db *DB) Migrate() error {
 
 // ErrorCode returns the error code of the given error
 func (db *DB) ErrorCode(err error) string {
-	pgErr := err.(*pgconn.PgError)
-	return pgErr.Code
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		return pgErr.Code
+	}
+	return "0000"
 }
 
 // Close closes the database connection

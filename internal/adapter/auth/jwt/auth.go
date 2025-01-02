@@ -29,7 +29,7 @@ func New(config *config.TokenConfiguration) *JwtToken {
 	}
 }
 
-func (jt *JwtToken) CreateToken(id, email string, role int) (string, error) {
+func (jt *JwtToken) CreateToken(id, email string, role string) (string, error) {
 	// Create a new token object, specifying signing method and the claims
 	// you would like it to contain.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
@@ -37,7 +37,7 @@ func (jt *JwtToken) CreateToken(id, email string, role int) (string, error) {
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		NotBefore: jwt.NewNumericDate(time.Now()),
 		Issuer:    config.GetConfig().App.Name,
-		Subject:   email,
+		Subject:   email + "," + role,
 		ID:        id,
 	})
 
@@ -61,7 +61,7 @@ func (jt *JwtToken) VerifyToken(tokenString string) (domain.Claims, error) {
 	})
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			return domain.Claims{}, errors.New("expired token")
+			return domain.Claims{}, errors.New(domain.ErrExpiredToken.Error())
 		} else {
 			return domain.Claims{}, errors.New("invalid token")
 		}

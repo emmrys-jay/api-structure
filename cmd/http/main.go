@@ -20,16 +20,16 @@ import (
 	"go.uber.org/zap"
 )
 
-// @title						Savely (Smart Personal Finance Manager) API
+// @title						Savely
 // @version					1.0
-// @description				This is a RESTful personal finance API written in Go using go-chi, PostgreSQL database, and Redis cache.
+// @description				A personal finance application
 //
 // @contact.name				Emmanuel Jonathan
-// @contact.url				https://github.com/emmrys-jay/savely
+// @contact.url				https://github.com/emmrys-jay
 // @contact.email				jonathanemma121@gmail.com
 //
-// @host						http://localhost:8080
-// @BasePath					/v1
+// @host						localhost:8080
+// @BasePath					/api/v1
 // @schemes					http https
 //
 // @securityDefinitions.apikey	BearerAuth
@@ -59,20 +59,20 @@ func main() {
 	l.Info("Successfully connected to the database",
 		zap.String("db", config.Database.Protocol))
 
-	// Migrate database
-	// err = db.Migrate()
-	// if err != nil {
-	// 	l.Error("Error migrating database", zap.Error(err))
-	// 	os.Exit(1)
-	// }
+	// Migrate postgres database
+	err = db.Migrate()
+	if err != nil {
+		l.Error("Error migrating database", zap.Error(err))
+		os.Exit(1)
+	}
 
-	// l.Info("Successfully migrated the database")
+	l.Info("Successfully migrated the database")
 
 	// Init cache service
 	cache, err := redis.New(ctx, &config.Redis)
 	if err != nil {
 		l.Error("Error initializing cache connection", zap.Error(err))
-		os.Exit(1)
+		// os.Exit(1) // Cache is not being used at the moment
 	}
 	defer cache.Close()
 
@@ -87,15 +87,39 @@ func main() {
 	pingService := service.NewPingService(pingRepo, cache)
 	pingHandler := httpLib.NewPingHandler(pingService, validator.New())
 
+	// User
+	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo, cache)
+	userHandler := httpLib.NewUserHandler(userService, validator.New())
+
+	// Auth
+	authService := service.NewAuthService(userRepo, tokenService, cache)
+	authHandler := httpLib.NewAuthHandler(authService, validator.New())
+
 	// Init router
 	router, err := httpLib.NewRouter(
 		&config.Server,
 		tokenService,
+		l,
 		*pingHandler,
+		*userHandler,
+		*authHandler,
 	)
 	if err != nil {
 		l.Error("Error initializing router ", zap.Error(err))
 		os.Exit(1)
+	}
+
+	// Create Admin User
+	if err := userService.CreateAdminUser(context.Background(), config.Admin.Email, config.Admin.Password); err != nil {
+		if err.Code() != 500 {
+			l.Info("Admin user already exists", zap.String("info", err.Error()))
+		} else {
+			l.Error("Could not create admin user, exiting...", zap.Error(err))
+			os.Exit(1)
+		}
+	} else {
+		l.Info("Successfully created admin user with email: ", zap.String("email", config.Admin.Email))
 	}
 
 	// Start server

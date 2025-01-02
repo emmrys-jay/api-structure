@@ -33,6 +33,16 @@ func NewUnauthorizedCError(message string) CError {
 	return err{http.StatusUnauthorized, message}
 }
 
+// NewInternalError returns a new custom internal error from message
+func NewInternalCError(message string) CError {
+	return err{http.StatusInternalServerError, message}
+}
+
+// NewBadRequestCError returns a new custom bad request error from message
+func NewBadRequestCError(message string) CError {
+	return err{http.StatusBadRequest, message}
+}
+
 var (
 	// ErrInternal is an error for when an internal service fails to process the request
 	ErrInternal = NewCError(http.StatusInternalServerError, "internal server error")
@@ -40,6 +50,8 @@ var (
 	ErrDataNotFound = NewCError(http.StatusNotFound, "data not found")
 	// ErrConflictingData is an error for when data conflicts with existing data
 	ErrConflictingData = NewCError(http.StatusConflict, "data conflicts with existing data in unique column")
+	// ErrForeignKeyViolation is an error for when there is a foreign key violation
+	ErrForeignKeyViolation = NewCError(http.StatusConflict, "some of the specified ids were not found")
 	// ErrInsufficientPayment is an error for when total paid is less than total price
 	ErrTokenDuration = NewUnauthorizedCError("invalid token duration format")
 	// ErrTokenCreation is an error for when the token creation fails
@@ -56,4 +68,6 @@ var (
 	ErrInvalidAuthorizationType = NewUnauthorizedCError("authorization type is not supported")
 	// ErrUnauthorized is an error for when the user is unauthorized
 	ErrUnauthorized = NewUnauthorizedCError("user is unauthorized to access the resource")
+	// ErrInvalidCredentials is an error for when the credentials are invalid
+	ErrInvalidCredentials = NewUnauthorizedCError("invalid email or password")
 )

@@ -3,13 +3,14 @@ package http
 import (
 	"net/http"
 
+	"savely/internal/adapter/logger"
 	"savely/internal/core/domain"
 	"savely/internal/core/port"
 
 	"github.com/go-playground/validator/v10"
 )
 
-// CategoryHandler represents the HTTP handler for category-related requests
+// PingHandler represents the HTTP handler for ping-related requests
 type PingHandler struct {
 	svc      port.PingService
 	validate *validator.Validate
@@ -30,12 +31,11 @@ func NewPingHandler(svc port.PingService, vld *validator.Validate) *PingHandler 
 //	@Tags			Ping
 //	@Accept			json
 //	@Produce		json
-//	@Param			ping.PingPostDTO	body		domain.Ping		true	"Create ping request"
-//	@Success		200					{object}	response		"Ping created"
-//	@Failure		400					{object}	errorResponse	"Validation error"
-//	@Failure		500					{object}	errorResponse	"Internal server error"
-//	@Router			/ [post]
-//	@Security		BearerAuth
+//	@Param			domain.Ping	body		domain.Ping		true	"Create ping request"
+//	@Success		201			{object}	response		"Ping created"
+//	@Failure		400			{object}	errorResponse	"Validation error"
+//	@Failure		500			{object}	errorResponse	"Internal server error"
+//	@Router			/health [post]
 func (ch *PingHandler) PingPost(w http.ResponseWriter, r *http.Request) {
 	var req domain.Ping
 
@@ -61,7 +61,8 @@ func (ch *PingHandler) PingPost(w http.ResponseWriter, r *http.Request) {
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	response	"Ping created"
-//	@Router			/ [get]
+//	@Router			/health [get]
 func (ch *PingHandler) PingGet(w http.ResponseWriter, r *http.Request) {
+	logger.FromCtx(r.Context()).Info("Alive!")
 	handleSuccessWithMessage(w, 200, nil, "Server OK")
 }
