@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"savely/internal/adapter/config"
+	"api-structure/internal/adapter/config"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/golang-migrate/migrate/v4"

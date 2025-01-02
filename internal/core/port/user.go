@@ -3,7 +3,7 @@ package port
 import (
 	"context"
 
-	"savely/internal/core/domain"
+	"api-structure/internal/core/domain"
 
 	"github.com/google/uuid"
 )

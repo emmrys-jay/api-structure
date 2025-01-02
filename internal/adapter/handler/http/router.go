@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"savely/internal/adapter/config"
-	"savely/internal/core/port"
+	"api-structure/internal/adapter/config"
+	"api-structure/internal/core/port"
 
 	"go.uber.org/zap"
 

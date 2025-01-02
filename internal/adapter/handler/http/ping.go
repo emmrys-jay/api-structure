@@ -3,9 +3,9 @@ package http
 import (
 	"net/http"
 
-	"savely/internal/adapter/logger"
-	"savely/internal/core/domain"
-	"savely/internal/core/port"
+	"api-structure/internal/adapter/logger"
+	"api-structure/internal/core/domain"
+	"api-structure/internal/core/port"
 
 	"github.com/go-playground/validator/v10"
 )

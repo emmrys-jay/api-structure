@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"savely/internal/adapter/logger"
-	"savely/internal/core/domain"
-	"savely/internal/core/port"
-	"savely/internal/core/util"
+	"api-structure/internal/adapter/logger"
+	"api-structure/internal/core/domain"
+	"api-structure/internal/core/port"
+	"api-structure/internal/core/util"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"

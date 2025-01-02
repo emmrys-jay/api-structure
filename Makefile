@@ -48,13 +48,13 @@ service-down-add: ## Stop services, volumes and networks
 # 	dbdocs build $(DBML_FILE)
 
 # db-create: ## Create database if not exists
-# 	docker exec -it savely_postgres sh -c "psql -U $(DB_USER) -c 'SELECT 1' -d $(DB_NAME) &>/dev/null || psql -U $(DB_USER) -c 'CREATE DATABASE $(DB_NAME);'"
+# 	docker exec -it api-structure_postgres sh -c "psql -U $(DB_USER) -c 'SELECT 1' -d $(DB_NAME) &>/dev/null || psql -U $(DB_USER) -c 'CREATE DATABASE $(DB_NAME);'"
 
 # db-drop: ## Drop database
-# 	docker exec -it savely_postgres sh -c "psql -U $(DB_USER) -c 'DROP DATABASE $(DB_NAME);'"
+# 	docker exec -it api-structure_postgres sh -c "psql -U $(DB_USER) -c 'DROP DATABASE $(DB_NAME);'"
 
 # db-cli: ## Connect to database using command line interface
-# 	docker exec -it savely_postgres sh -c "psql -U $(DB_USER) -d $(DB_NAME)"
+# 	docker exec -it api-structure_postgres sh -c "psql -U $(DB_USER) -d $(DB_NAME)"
 
 create-migration:
 	migrate create -ext sql -dir internal/adapter/storage/postgres/migrations -seq $(NAME)
@@ -66,7 +66,7 @@ migrate-down: ## Rollback database migrations
 	migrate -path ./internal/adapter/storage/postgres/migrations -database $(DSN) -verbose down $(ARG)
 
 redis-cli: ## Connect to redis using command line interface
-	docker exec -it savely_redis redis-cli
+	docker exec -it api-structure_redis redis-cli
 
 dev: ## Start development server
 	air

@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"savely/internal/adapter/storage/postgres"
-	"savely/internal/core/domain"
+	"api-structure/internal/adapter/storage/postgres"
+	"api-structure/internal/core/domain"
 )
 
 /**

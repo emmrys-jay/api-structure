@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"savely/internal/adapter/config"
-	"savely/internal/core/domain"
+	"api-structure/internal/adapter/config"
+	"api-structure/internal/core/domain"
 
 	"github.com/golang-jwt/jwt/v5"
 )

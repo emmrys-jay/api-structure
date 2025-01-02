@@ -3,7 +3,7 @@ package port
 import (
 	"context"
 
-	"savely/internal/core/domain"
+	"api-structure/internal/core/domain"
 )
 
 // PingRepository is an interface for interacting with ping-related data

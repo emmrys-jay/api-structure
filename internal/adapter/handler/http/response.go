@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"savely/internal/core/domain"
+	"api-structure/internal/core/domain"
 
 	"github.com/go-playground/validator/v10"
 )

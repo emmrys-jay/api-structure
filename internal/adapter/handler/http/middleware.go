@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"savely/internal/adapter/logger"
-	"savely/internal/core/domain"
-	"savely/internal/core/port"
+	"api-structure/internal/adapter/logger"
+	"api-structure/internal/core/domain"
+	"api-structure/internal/core/port"
 
 	"github.com/rs/xid"
 	"go.uber.org/zap"

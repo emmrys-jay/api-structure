@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"savely/internal/core/domain"
-	"savely/internal/core/port"
+	"api-structure/internal/core/domain"
+	"api-structure/internal/core/port"
 )
 
 /**

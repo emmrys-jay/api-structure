@@ -2,7 +2,7 @@ database:
   protocol: "postgresql"
   host: "127.0.0.1"
   port: "5433"
-  name: "savely"
+  name: "api-structure"
   user: "postgres"
   password: "postgres"
 redis:
@@ -13,11 +13,11 @@ server:
   httpPort: "8080"
   httpAllowedOrigins: "http://127.0.0.1:3000,http://127.0.0.1:8080"
 app: 
-  name: "savely"
+  name: "api-structure"
   env: "development"
 token: 
   duration: "1h"
   secret: ""
 admin:
-  email: "savely-admin@gmail.com"
+  email: "api-structure-admin@gmail.com"
   password: "password"
